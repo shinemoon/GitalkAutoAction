@@ -53,6 +53,7 @@ Github上作者已经有了很不错的文档描述，只需要按部就班的�
 ## Github Action自动为新文章初始化Gitalk评论
 
 虽然我说过对于单独新增的文章，初始化本来不应当成为问题，但是到底是顺手的事情，所以，我就把Github Action的部分也做好了,后面每次如果发生post的变化就会自动触发编译以及单独的trigger评论初始化的动作：
+
 ![Workflow Example](https://github.com/shinemoon/GitalkAutoAction/blob/main/flow.png?raw=true) 
 
 为了方便特意把脚本和文件整理了下放到了[GitalAutoAction](https://github.com/shinemoon/GitalkAutoAction) 这个repo下面。
