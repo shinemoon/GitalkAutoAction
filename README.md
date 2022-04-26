@@ -1,5 +1,3 @@
-# GitalkAutoAction
-Provide script to initialize Gitalk Issue Comment and also Github action to automatically generate issue by pushing.
 
 前面聊到我在blog的repo内做了Gitalk的适配，然后也有离线的脚本做了一次将近七百篇文章的批量初始化的动作，原本是打算不再去做自动初始化的Action内容了，但是出于对Github Action本身的兴趣，我还是打算把这段时间的一些零零碎碎的工作整理下，因为这里有些步骤的内容，可能的确并不好找，即使是本来并非使用Gitalk而只是和我一样刚接触Github Action的人也可以有所参考。
 
@@ -50,7 +48,8 @@ Github上作者已经有了很不错的文档描述，只需要按部就班的�
 - 如果是文章文件名和上面的假设2不符合, 那么请修改parseFile中`lre = re.match(r".*/\d+-\d+-\d+-(.*)\.md",filepath)`这一部分；
 - Issue的label我是按照Gitalk的某缺省配置设置的做法用url(relative)作为label，而且因为在Jekyll配置中，也是依靠文件名来分解的，这部分的定制也是在parseFile函数中，可以参考link、label等的匹配语句进行修改。
 
-## Github Action自动为新文章初始化Gitalk评论
+## Github Action自动为新文章初始化Gitalk评论    
+
 
 虽然我说过对于单独新增的文章，初始化本来不应当成为问题，但是到底是顺手的事情，所以，我就把Github Action的部分也做好了,后面每次如果发生post的变化就会自动触发编译以及单独的trigger评论初始化的动作：
 
@@ -65,21 +64,22 @@ Github上作者已经有了很不错的文档描述，只需要按部就班的�
 1. 首先确认在对应的repo（blog所在的repo）的setting中正确的设置了Secret的Token，通过这种方法就可以避免在public的库中明文存储的隐私信息，而脚本在action中执行过程中就是靠调用存储在Secret中的Token值来认证的，具体文档可以参考[How to use GitHub Actions secrets to hide your tokens and passwords](https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/GitHub-Actions-Secrets-Example-Token-Tutorial) 以及Github的官方文档；
 2. 把GitalAutoAction中的的文件都复制放置在希望实现自动评论的blog的repo根目录下（保持一样的目录结构）
 
-注意：这里仅仅监控了_posts下的文件变化，如果如前面提到的假如放置目录有变化，那么需要调整对应的条件
+注意：这里仅仅监控了_posts下的文件变化，如果如前面提到的假如放置目录有变化，那么需要调整对应的条件:
 
     2 on:
     3   push:
     4     paths:
     5       - '_posts/**.md'
 
-另外，有个豆知识，假如想在action中侦测到某次push当中涉及到修改的所有的文件，那么就不能依靠某一次commit，我看到网上众说纷纭，但是和Action本身特性结合起来，其实原理上就是利用某次action before和after之间的git diff-tree来找到修改过的文件 - [Ref Link](https://github.community/t/can-i-process-only-changed-files-with-github-actions/137814) - ，而这个
+另外，有个豆知识，假如想在action中侦测到某次push当中涉及到修改的所有的文件，那么就不能依靠某一次commit，我看到网上众说纷纭，但是和Action本身特性结合起来，其实原理上就是利用某次action before和after之间的git diff-tree来找到修改过的文件 - [Ref Link](https://github.community/t/can-i-process-only-changed-files-with-github-actions/137814) - ，如下
 
     13     - uses: actions/checkout@v3
     14       with:
     15           fetch-depth: 0
-    16     - run: echo "$(git diff --name-only --no-commit-id -r ${{ github.event.before }}..${{ github.event.after }})" | tee chglist
+    16     - run: echo "$(git diff --name-only --no-commit-id -r `${{ github.event.before }}..${{ github.event.after }}`)" | tee chglist
 
 然后，在同一个job中，输入输出可以依靠文件，例如上文中的chglist，不过我理解该文件应该是沙盒环境下的临时存在而已。
 
 然后，之后，每次当有post中的文件发生变化之后，github Action就会自动检查对应修改过的文章是否有对应的评论issue存在，如果没有就会自动创建issue。
+
 
